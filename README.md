@@ -1,6 +1,6 @@
 # Mantenimiento
 
-Página web para el mantenimiento de artículos de almacen
+Página web para el mantenimiento de artículos de almacén
 
 Requisitos:
 
