@@ -114,12 +114,14 @@ class Query {
 	function getArticulosLibres(){
 		return "SELECT a.codart AS articulo,a.descrip,a.codprecan+ ' x ' +CAST(a.resto AS varchar) AS presentacion,a.ivadif,a.peso,ISNULL(cd.orden,0) AS orden,ISNULL(cd.categoria,0) AS categoria,ISNULL(cd.linea,0) AS linea,ISNULL(cd.generico,0) AS generico,ISNULL(cd.familia,0) AS familia,cd.factor    
 				FROM chess.articulos a 
-				INNER JOIN oltp.articulo_categoria ac on a.codart = ac.articulo 			 
+				INNER JOIN oltp.articulo_categoria ac ON a.codart = ac.articulo 	
+				INNER JOIN oltp.articulo_marca am ON ac.marca = am.id		 
 				LEFT JOIN oltp.catalogo_detalle cd  ON  a.codart = cd.articulo 
 				WHERE a.anulado = 0 
 				AND ac.linea <> 998 
 				AND ac.generico <> 998 
-				AND ac.marca NOT IN (998,1052,1002,1003) 
+				AND am.descrip NOT LIKE 'DESCONTINUADOS'
+				AND am.descrip NOT LIKE 'PROMOCIONALES' 
 				AND ac.articulo <> 998 
 				AND a.colector <> 0 
 				AND (cd.articulo IS NULL OR cd.categoria = 0 OR cd.linea = 0 OR cd.generico = 0 OR cd.familia = 0)";
