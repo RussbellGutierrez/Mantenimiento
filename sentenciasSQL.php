@@ -119,7 +119,7 @@ class Query {
 				WHERE a.anulado = 0 
 				AND ac.linea <> 998 
 				AND ac.generico <> 998 
-				AND ac.marca NOT IN (998,1052) 
+				AND ac.marca NOT IN (998,1052,1002,1003) 
 				AND ac.articulo <> 998 
 				AND a.colector <> 0 
 				AND (cd.articulo IS NULL OR cd.categoria = 0 OR cd.linea = 0 OR cd.generico = 0 OR cd.familia = 0)";
