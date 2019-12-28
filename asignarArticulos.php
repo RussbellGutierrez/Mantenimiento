@@ -17,7 +17,8 @@ $d = explode('@',$datos);
 
 switch ($opcion) {
 	case 0:
-		$sql = $query->asignarArticuloLibre($d[0],$d[1],$d[2],$d[3],$d[4]);
+		$sql = $query->asignarArticuloLibre($d[0],$d[1],$d[2],$d[3],$d[4],$d[5]);
+		echo $sql;
 		$ejecutar = sqlsrv_query($cadena,$sql);
 		if ($ejecutar === false) {
 			$respuesta = "error";
@@ -26,7 +27,7 @@ switch ($opcion) {
 		}
 		break;
 	case 1:
-		$sql = $query->asignarArticulo($d[0],$d[1],$d[2],$d[3],$d[4]);
+		$sql = $query->asignarArticulo($d[0],$d[1],$d[2],$d[3],$d[4],$d[5]);
 		$ejecutar = sqlsrv_query($cadena,$sql);
 		if ($ejecutar === false) {
 			$respuesta = "error";

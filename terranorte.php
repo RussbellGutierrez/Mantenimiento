@@ -22,6 +22,9 @@
 	<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 	<!--FontAwesome-->
 	<script defer src="https://use.fontawesome.com/releases/v5.6.1/js/all.js" integrity="sha384-R5JkiUweZpJjELPWqttAYmYM1P3SNEJRM6ecTQF05pFFtxmCO+Y1CiUhvuDzgSVZ" crossorigin="anonymous"></script>
+	<!--Excel JS-->
+	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+	<script src="http://cdn.jsdelivr.net/g/filesaver.js"></script>
 	<!--StylesCustom-->
 	<link rel="stylesheet" type="text/css" href="styles/estiloCustom.css">
 </head>
@@ -79,12 +82,14 @@
 						                <th style="width: 8%">Peso</th>
 						                <th style="width: 5%">Fac.</th>
 						                <th style="width: 5%">Ord.</th>
+						                <th style="width: 0%"></th>
 						            </tr>
 						        </thead>
 							</table>
 		  				</div>
 			  		</div>
 			  		<div class="cus-border-button col-xs-5 col-md-1">
+			  			<a id="excel" class="btn cus-icon" data-toggle="tooltip" data-placement="right" title="Reporte articulos incompletos"><i class="fas fa-file-excel"></i></a>
 			  			<a id="pendiente" class="btn cus-icon" data-toggle="tooltip" data-placement="right" title="Articulos libres"><i class="fas fa-users"></i></a>
 			  			<a id="subir" class="btn cus-icon" data-toggle="tooltip" data-placement="right" title="Subir una posicion"><i class="fas fa-arrow-up"></i></a>
 			  			<a id="bajar" class="btn cus-icon" data-toggle="tooltip" data-placement="right" title="Bajar una posicion"><i class="fas fa-arrow-down"></i></a>
@@ -380,7 +385,8 @@
 							obj.linea = data.linea
 							obj.generico = data.generico
 							obj.familia = data.familia
-							if (data.falta == 'CLGF') {
+							obj.factor = data.factor
+							if (data.falta == 'CLGF' && data.orden == 0) {
 								t.push(obj)
 							}else {
 								p.push(obj)
@@ -447,6 +453,12 @@
 	  											item += "<input id='opcion-2' class='form-check-input' type='radio' name='opciones' value=2>"
 	  											item += "<label class='form-check-label' for='opcion-2'>Considerar solo los articulos sin ningun segmento</label>"
 												item += "</div>"
+												item += "<div id='opcion-3' class='input-group input-group-sm mb-3' style='display:none'>"
+												item += "<div class='input-group-prepend'>"
+												item += "<span class='input-group-text'> Número de factor</span>"
+												item += "</div>"
+												item += "<input id='factor-num' type='number' class='form-control' value='0' min='0' onkeypress='return soloNumeros(event,0)'>"
+												item += "</div>"
 											$('#modal-2').modal({
 												backdrop: true,
 												keyboard: true
@@ -467,6 +479,8 @@
 												$('#segundo').hide()
 												$('label').hide()
 												$('input[type="radio"]').hide()
+												$('#opcion-3').show()
+												$('#factor-num').val(0)
 											}else if(todo.length > 1 && parte.length == 0) {
 												$('#primero').text(todo.length+' articulos seleccionados')
 												$('#segundo').hide()
@@ -477,6 +491,7 @@
 												$('#segundo').hide()
 												$('label').hide()
 												$('input[type="radio"]').hide()
+												$('#opcion-3').show()
 												if(parte[0].categoria != 0){
 													$('#segcategoria').val(parte[0].categoria)
 												}
@@ -488,6 +503,9 @@
 												}
 												if(parte[0].familia != 0){
 													$('#segfamilia').val(parte[0].familia)
+												}
+												if (parte[0].factor != 0) {
+													$('#factor-num').val(parte[0].factor)
 												}
 											}else if (todo.length > 0 && parte.length > 0) {
 												$('#primero').text(todo.length+' articulos sin segmentos')
@@ -522,7 +540,8 @@
 						obj.linea = data.linea
 						obj.generico = data.generico
 						obj.familia = data.familia
-						if (data.falta == 'CLGF') {
+						obj.factor = data.factor
+						if (data.falta == 'CLGF' && data.orden == 0) {
 							t.push(obj)
 						}else {
 							p.push(obj)
@@ -532,41 +551,42 @@
 					let parte = JSON.parse(JSON.stringify(p))
 
 					let check = $('input[type="radio"]:checked').val()
+					let factor = $('#factor-num').val()
 					swal({
 						title: "Asignando articulos, espere por favor...",
 						allowEscapeKey: false,
 						allowOutsideClick: false
 					})
 
+					if (factor == "") {
+						factor = 0
+					}
+
 					let segmentos = $('#segcategoria').val()+"@"+$('#seglinea').val()+"@"+$('#seggenerico').val()+"@"+$('#segfamilia').val()
 
 					if (todo.length > 0 && parte.length == 0) {
-						let msg = ''
 						$.each(todo,function(i,value){
-							const datos = value.id+"@"+segmentos
+							const datos = value.id+"@"+segmentos+"@"+factor
 							$.post('asignarArticulos.php',{basedatos:'terranorte',opcion:0,datos:datos},function(e){
 								if (e == 'error') {
-									msg = e
+									swal({
+										type: 'error',
+										title: 'Ocurrio un error mientras se asignaban articulos',
+										showConfirmButton: false,
+										timer:2000
+									})
+								}else{
+									swal({
+										type: 'success',
+										title: 'Articulos asignados correctamente',
+										showConfirmButton: false,
+										timer:1000
+									})
 								}
 							})
 						})
-						if (msg == 'error') {
-							swal({
-								type: 'error',
-								title: 'Ocurrio un error mientras se asignaban articulos',
-								showConfirmButton: false,
-								timer:2000
-							})
-						}else{
-							swal({
-								type: 'success',
-								title: 'Articulos asignados correctamente',
-								showConfirmButton: false,
-								timer:1000
-							})
-						}
 					}else if(todo.length == 0 && parte.length == 1){
-						const datos = parte[0].id+"@"+segmentos
+						const datos = parte[0].id+"@"+segmentos+"@"+factor
 						$.post('asignarArticulos.php',{basedatos:'terranorte',opcion:1,datos:datos},function(e){
 							if (e == 'error') {
 								swal({
@@ -597,7 +617,7 @@
 								case 1:
 								let msg_1 = ''
 								$.each(todo,function(i,value){
-									const datos = value.id+"@"+segmentos
+									const datos = value.id+"@"+segmentos+"@"+factor
 									$.post('asignarArticulos.php',{basedatos:'terranorte',opcion:0,datos:datos},function(e){
 										if (e == 'error') {
 											msg_1 = e
@@ -605,7 +625,7 @@
 									})
 								})
 								$.each(parte,function(i,value){
-									const datos = value.id+"@"+segmentos
+									const datos = value.id+"@"+segmentos+"@"+factor
 									$.post('asignarArticulos.php',{basedatos:'terranorte',opcion:1,datos:datos},function(e){
 										if (e == 'error') {
 											msg_1 = e
@@ -631,7 +651,7 @@
 								case 2:
 								let msg_2 = ''
 								$.each(todo,function(i,value){
-									const datos = value.id+"@"+segmentos
+									const datos = value.id+"@"+segmentos+"@"+factor
 									$.post('asignarArticulos.php',{basedatos:'terranorte',opcion:0,datos:datos},function(e){
 										if (e == 'error') {
 											msg_2 = e
@@ -665,6 +685,31 @@
 					llenandoArticulos(0)
 				})
 
+				$('#excel').on('click',function(){
+					$.post('obtenerArticulosIncompletos.php',{basedatos:'terranorte'},function(e){
+						if (e != '[]') {
+							var wb = XLSX.utils.book_new()
+							wb.SheetNames.push("Articulos Incompletos")
+							var ws_row = [['Categoria','Descrip','Linea','Descrip','Generico','Descrip','Familia','Descrip','Articulo','Descrip','Orden','Factor','Anulado']]
+							var ws_body = ''
+
+							const json = JSON.parse(e)
+							for (const a of json){
+								ws_body = [a['categoria'],a['nomcat'],a['linea'],a['nomlin'],a['generico'],a['nomgen'],a['familia'],a['nomfam'],a['articulo'],a['nomart'],a['orden'],a['factor'],a['anulado']]
+								ws_row.push(ws_body)
+							}
+
+							var ws = XLSX.utils.aoa_to_sheet(ws_row)
+							wb.Sheets["Articulos Incompletos"] = ws
+
+							var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'})
+							saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'articulos_incompletos_tn.xlsx')
+						}else {
+							swal('Atención','No existen articulos incompletos','warning')
+						}
+					})
+				})
+
 				$('#ordenar').on('click',function(){
 					if ($('#familia button').hasClass('active')) {
 						swal({
@@ -691,6 +736,15 @@
 				})
 			})
 		})
+
+		function s2ab(s){
+			var buf = new ArrayBuffer(s.length)
+			var view = new Uint8Array(buf)
+			for (var i=0; i<s.length; i++){
+				view[i] = s.charCodeAt(i) & 0xFF
+			}
+			return buf
+		}
 
 		function buscarLista(){
 		  	let filtro = $('#buscar').val()
@@ -1068,7 +1122,7 @@
 							targets: 5
 						},
 						{
-							targets: 4,
+							targets: 6,
 							visible: false
 						}
 					],
@@ -1078,7 +1132,8 @@
 						{data:"presentacion"},
 						{data:"peso"},
 						{data:"factor"},
-						{data:"falta"}
+						{data:"falta"},
+						{data:"orden"}
 					],
 					fnRowCallback: function( row, data, index ) {
 						if (data.articulo == valor) {
@@ -1111,12 +1166,19 @@
 				            dato: dato
 				        }
 					},
+					columnDefs: [
+						{
+							targets: 6,
+							visible: false
+						}
+					],
 					columns: [
 						{data:"articulo"},
 						{data:"descrip"},
 						{data:"presentacion"},
 						{data:"peso"},
 						{data:"factor"},
+						{data:"orden"},
 						{data:"orden"}
 					],
 					fnRowCallback: function( row, data, index ) {
@@ -1292,6 +1354,7 @@
 						        '<th style="width: 8%">Peso</th>'+
 						        '<th style="width: 5%">Fac.</th>'+
 						        '<th style="width: 5%">Ord.</th>'+
+						        '<th style="width: 0%"></th>'+
 						    '</tr>'+
 						'</thead>'+
 					'</table>'

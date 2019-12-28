@@ -159,6 +159,21 @@ class Query {
 				WHERE id= ".$articulo." ";
 	}
 
+	function getArticulosIncompletos(){
+		return "SELECT cd.articulo,ISNULL((SELECT ca.descrip 
+											FROM oltp.catalogo_articulo ca  
+											WHERE ca.id=cd.articulo),a.descrip) AS nomart,cd.categoria,ISNULL(cc.descrip,'No tiene') AS nomcat,cd.linea,ISNULL(cl.descrip,'No tiene') AS nomlin,cd.generico,ISNULL(cg.descrip,'No tiene') AS nomgen,cd.familia,ISNULL(cf.descrip,'No tiene') AS nomfam,cd.orden,cd.factor,cd.anulado
+				FROM oltp.catalogo_detalle cd
+				INNER JOIN chess.articulos a ON cd.articulo=a.codart
+				LEFT JOIN oltp.catalogo_categoria cc ON cd.categoria = cc.id
+				LEFT JOIN oltp.catalogo_linea cl ON cd.linea = cl.id
+				LEFT JOIN oltp.catalogo_generico cg ON cd.generico = cg.id
+				LEFT JOIN oltp.catalogo_familia cf ON cd.familia = cf.id
+				WHERE (cd.factor = 0 OR cd.categoria = 0 OR cd.linea = 0 OR cd.generico = 0 OR cd.familia = 0 OR cd.orden IN (0,99))
+				AND cd.anulado = 0
+				ORDER BY cd.articulo ASC";
+	}
+
 	function actualizarDescripcion($id,$descrip){
 		return "UPDATE oltp.catalogo_articulo SET descrip = '".$descrip."' WHERE id = ".$id." ";
 	}
@@ -238,12 +253,12 @@ class Query {
 		return $sql;
 	}
 
-	function asignarArticuloLibre($articulo,$categoria,$linea,$generico,$familia){
-		return "INSERT INTO oltp.catalogo_detalle (articulo,categoria,linea,generico,familia,orden,anulado) VALUES (".$articulo.",".$categoria.",".$linea.",".$generico.",".$familia.",99,0)";
+	function asignarArticuloLibre($articulo,$categoria,$linea,$generico,$familia,$factor){
+		return "INSERT INTO oltp.catalogo_detalle (articulo,categoria,linea,generico,familia,orden,factor,anulado) VALUES (".$articulo.",".$categoria.",".$linea.",".$generico.",".$familia.",99,0)";
 	}
 
-	function asignarArticulo($articulo,$categoria,$linea,$generico,$familia){
-		return "UPDATE oltp.catalogo_detalle SET categoria = ".$categoria." ,linea = ".$linea." ,generico = ".$generico." ,familia = ".$familia." WHERE articulo = ".$articulo." ";
+	function asignarArticulo($articulo,$categoria,$linea,$generico,$familia,$factor){
+		return "UPDATE oltp.catalogo_detalle SET categoria = ".$categoria." ,linea = ".$linea." ,generico = ".$generico." ,familia = ".$familia." ,factor = ".$factor." WHERE articulo = ".$articulo." ";
 	}
 
 	function asignarFactor($articulo,$factor){
