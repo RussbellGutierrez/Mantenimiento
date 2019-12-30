@@ -160,11 +160,13 @@ class Query {
 	}
 
 	function getArticulosIncompletos(){
-		return "SELECT cd.articulo,ISNULL((SELECT ca.descrip 
+		return "SELECT am.descrip AS marca,cd.articulo,ISNULL((SELECT ca.descrip 
 											FROM oltp.catalogo_articulo ca  
 											WHERE ca.id=cd.articulo),a.descrip) AS nomart,cd.categoria,ISNULL(cc.descrip,'No tiene') AS nomcat,cd.linea,ISNULL(cl.descrip,'No tiene') AS nomlin,cd.generico,ISNULL(cg.descrip,'No tiene') AS nomgen,cd.familia,ISNULL(cf.descrip,'No tiene') AS nomfam,cd.orden,cd.factor,cd.anulado
 				FROM oltp.catalogo_detalle cd
 				INNER JOIN chess.articulos a ON cd.articulo=a.codart
+				LEFT JOIN oltp.articulo_categoria ac ON cd.articulo=ac.articulo
+				LEFT JOIN oltp.articulo_marca am ON ac.marca=am.id
 				LEFT JOIN oltp.catalogo_categoria cc ON cd.categoria = cc.id
 				LEFT JOIN oltp.catalogo_linea cl ON cd.linea = cl.id
 				LEFT JOIN oltp.catalogo_generico cg ON cd.generico = cg.id

@@ -690,12 +690,12 @@
 						if (e != '[]') {
 							var wb = XLSX.utils.book_new()
 							wb.SheetNames.push("Articulos Incompletos")
-							var ws_row = [['Categoria','Descrip','Linea','Descrip','Generico','Descrip','Familia','Descrip','Articulo','Descrip','Orden','Factor','Anulado']]
+							var ws_row = [['Marca','Categoria','Descrip','Linea','Descrip','Generico','Descrip','Familia','Descrip','Articulo','Descrip','Orden','Factor','Anulado']]
 							var ws_body = ''
 
 							const json = JSON.parse(e)
 							for (const a of json){
-								ws_body = [a['categoria'],a['nomcat'],a['linea'],a['nomlin'],a['generico'],a['nomgen'],a['familia'],a['nomfam'],a['articulo'],a['nomart'],a['orden'],a['factor'],a['anulado']]
+								ws_body = [a['marca'],a['categoria'],a['nomcat'],a['linea'],a['nomlin'],a['generico'],a['nomgen'],a['familia'],a['nomfam'],a['articulo'],a['nomart'],a['orden'],a['factor'],a['anulado']]
 								ws_row.push(ws_body)
 							}
 
